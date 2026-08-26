@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/customer.dart';
 
 class ApiService {
-  // Configurable base URL. 
-  // Uses 'http://127.0.0.1:8000' on Web/Desktop and 'http://10.0.2.2:8000' on Android Emulator
-  static String baseUrl = kIsWeb ? 'http://127.0.0.1:8000' : 'http://10.0.2.2:8000';
+  // Production FastAPI Backend deployed on Render (connected to Neon PostgreSQL)
+  static String baseUrl = 'https://customer-management-app-b2ul.onrender.com';
 
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',
