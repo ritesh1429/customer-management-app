@@ -1,0 +1,127 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import '../models/customer.dart';
+
+class ApiService {
+  // Configurable base URL. 
+  // Uses 'http://127.0.0.1:8000' on Web/Desktop and 'http://10.0.2.2:8000' on Android Emulator
+  static String baseUrl = kIsWeb ? 'http://127.0.0.1:8000' : 'http://10.0.2.2:8000';
+
+  static Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+
+  // Add customer
+  static Future<Customer> createCustomer({
+    required String name,
+    required String fatherName,
+    required String aadhaarNumber,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/customers'),
+      headers: _headers,
+      body: jsonEncode({
+        'name': name.trim(),
+        'father_name': fatherName.trim(),
+        'aadhaar_number': aadhaarNumber.trim(),
+      }),
+    );
+
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode == 201) {
+      return Customer.fromJson(responseData);
+    } else {
+      final errorMessage = responseData['detail'] ?? 'Failed to add customer';
+      throw Exception(errorMessage);
+    }
+  }
+
+  // Search customers by name
+  static Future<List<Customer>> searchCustomers(String name) async {
+    final encodedName = Uri.encodeComponent(name.trim());
+    final response = await http.get(
+      Uri.parse('$baseUrl/customers/search?name=$encodedName'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> list = jsonDecode(response.body);
+      return list.map((item) => Customer.fromJson(item)).toList();
+    } else {
+      final responseData = jsonDecode(response.body);
+      throw Exception(responseData['detail'] ?? 'Search failed');
+    }
+  }
+
+  // Get single customer details
+  static Future<Customer> getCustomerDetails(String customerId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/customers/$customerId'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      return Customer.fromJson(jsonDecode(response.body));
+    } else {
+      final responseData = jsonDecode(response.body);
+      throw Exception(responseData['detail'] ?? 'Customer not found');
+    }
+  }
+
+  // Update customer
+  static Future<Customer> updateCustomer(
+    String customerId, {
+    String? name,
+    String? fatherName,
+    String? aadhaarNumber,
+  }) async {
+    final Map<String, dynamic> updateData = {};
+    if (name != null) updateData['name'] = name.trim();
+    if (fatherName != null) updateData['father_name'] = fatherName.trim();
+    if (aadhaarNumber != null) updateData['aadhaar_number'] = aadhaarNumber.trim();
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/customers/$customerId'),
+      headers: _headers,
+      body: jsonEncode(updateData),
+    );
+
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return Customer.fromJson(responseData);
+    } else {
+      throw Exception(responseData['detail'] ?? 'Failed to update customer');
+    }
+  }
+
+  // Delete customer
+  static Future<void> deleteCustomer(String customerId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/customers/$customerId'),
+      headers: _headers,
+    );
+
+    if (response.statusCode != 200) {
+      final responseData = jsonDecode(response.body);
+      throw Exception(responseData['detail'] ?? 'Failed to delete customer');
+    }
+  }
+
+  // Fetch all customers (paginated)
+  static Future<List<Customer>> fetchAllCustomers({int skip = 0, int limit = 100}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/customers?skip=$skip&limit=$limit'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> list = jsonDecode(response.body);
+      return list.map((item) => Customer.fromJson(item)).toList();
+    } else {
+      final responseData = jsonDecode(response.body);
+      throw Exception(responseData['detail'] ?? 'Failed to fetch customer list');
+    }
+  }
+}
