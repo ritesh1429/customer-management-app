@@ -29,6 +29,7 @@ class _SearchCustomerScreenState extends State<SearchCustomerScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   
+  String _searchField = 'all'; // 'all', 'name', 'father_name'
   List<Customer> _searchResults = [];
   List<_SearchListItem> _displayItems = [];
   final Map<String, int> _letterIndices = {};
@@ -49,7 +50,7 @@ class _SearchCustomerScreenState extends State<SearchCustomerScreen> {
     final query = _searchController.text.trim();
     if (query.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a name to search')),
+        const SnackBar(content: Text('Please enter search text')),
       );
       return;
     }
@@ -61,7 +62,10 @@ class _SearchCustomerScreenState extends State<SearchCustomerScreen> {
     });
 
     try {
-      final results = await ApiService.searchCustomers(query);
+      final results = await ApiService.searchCustomers(
+        query,
+        searchField: _searchField,
+      );
       _processSearchResults(results);
     } catch (e) {
       setState(() {
@@ -140,6 +144,17 @@ class _SearchCustomerScreenState extends State<SearchCustomerScreen> {
     }
   }
 
+  String get _hintText {
+    switch (_searchField) {
+      case 'name':
+        return 'Enter customer name (e.g. Ramesh)';
+      case 'father_name':
+        return "Enter father's name (e.g. Suresh)";
+      default:
+        return 'Search by customer or father name...';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,6 +165,65 @@ class _SearchCustomerScreenState extends State<SearchCustomerScreen> {
       ),
       body: Column(
         children: [
+          // Filter Chips: All, Customer Name, Father's Name
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 12.0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  ChoiceChip(
+                    label: const Text('All Fields'),
+                    selected: _searchField == 'all',
+                    selectedColor: Colors.indigo.shade100,
+                    labelStyle: TextStyle(
+                      color: _searchField == 'all' ? Colors.indigo.shade900 : Colors.black87,
+                      fontWeight: _searchField == 'all' ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() => _searchField = 'all');
+                        if (_searchController.text.isNotEmpty) _performSearch();
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('Customer Name'),
+                    selected: _searchField == 'name',
+                    selectedColor: Colors.indigo.shade100,
+                    labelStyle: TextStyle(
+                      color: _searchField == 'name' ? Colors.indigo.shade900 : Colors.black87,
+                      fontWeight: _searchField == 'name' ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() => _searchField = 'name');
+                        if (_searchController.text.isNotEmpty) _performSearch();
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text("Father's Name"),
+                    selected: _searchField == 'father_name',
+                    selectedColor: Colors.indigo.shade100,
+                    labelStyle: TextStyle(
+                      color: _searchField == 'father_name' ? Colors.indigo.shade900 : Colors.black87,
+                      fontWeight: _searchField == 'father_name' ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() => _searchField = 'father_name');
+                        if (_searchController.text.isNotEmpty) _performSearch();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           // Search input bar
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -159,7 +233,7 @@ class _SearchCustomerScreenState extends State<SearchCustomerScreen> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Enter name (e.g. Ramesh)',
+                      hintText: _hintText,
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -223,7 +297,11 @@ class _SearchCustomerScreenState extends State<SearchCustomerScreen> {
                                 Icon(Icons.person_search_outlined, size: 72, color: Colors.grey.shade400),
                                 const SizedBox(height: 12),
                                 Text(
-                                  'Search by customer name',
+                                  _searchField == 'father_name'
+                                      ? "Search by father's name"
+                                      : _searchField == 'name'
+                                          ? 'Search by customer name'
+                                          : 'Search by customer or father name',
                                   style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                                 ),
                               ],

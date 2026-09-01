@@ -1,5 +1,6 @@
 from uuid import UUID
 from datetime import datetime
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from app.models.customer import Customer
@@ -43,12 +44,32 @@ def _get_sort_column(sort_by: str = "name", order: str = "asc"):
     
     return col.asc() if order.lower() == "asc" else col.desc()
 
-def search_customers_by_name(db: Session, name: str, sort_by: str = "name", order: str = "asc") -> list[Customer]:
-    if not name or not name.strip():
+def search_customers(
+    db: Session,
+    query_text: str,
+    search_field: str = "all",
+    sort_by: str = "name",
+    order: str = "asc"
+) -> list[Customer]:
+    if not query_text or not query_text.strip():
         return []
-    cleaned_name = name.strip()
+    cleaned = query_text.strip()
     sort_col = _get_sort_column(sort_by, order)
-    return db.query(Customer).filter(Customer.name.ilike(f"%{cleaned_name}%")).order_by(sort_col).all()
+
+    if search_field == "father_name":
+        filter_expr = Customer.father_name.ilike(f"%{cleaned}%")
+    elif search_field == "name":
+        filter_expr = Customer.name.ilike(f"%{cleaned}%")
+    else:
+        filter_expr = or_(
+            Customer.name.ilike(f"%{cleaned}%"),
+            Customer.father_name.ilike(f"%{cleaned}%")
+        )
+
+    return db.query(Customer).filter(filter_expr).order_by(sort_col).all()
+
+def search_customers_by_name(db: Session, name: str, sort_by: str = "name", order: str = "asc") -> list[Customer]:
+    return search_customers(db=db, query_text=name, search_field="name", sort_by=sort_by, order=order)
 
 def update_customer(db: Session, customer_id: UUID, customer_in: CustomerUpdate) -> Customer:
     customer = get_customer_by_id(db, customer_id)

@@ -14,13 +14,22 @@ def create_customer_endpoint(customer_in: CustomerCreate, db: Session = Depends(
 
 @router.get("/search", response_model=list[CustomerOut])
 def search_customers_endpoint(
-    name: str = Query(..., min_length=1, description="Name search query"),
+    name: str = Query(None, description="Name search query (legacy)"),
+    query: str = Query(None, description="Search query text"),
+    search_field: str = Query("all", description="Field to search in ('name', 'father_name', 'all')"),
     sort_by: str = Query("name", description="Field to sort by (name, created_at, aadhaar_number)"),
     order: str = Query("asc", description="Sort direction (asc or desc)"),
     db: Session = Depends(get_db)
 ):
-    """Search customers by partial name (case-insensitive)"""
-    return customer_service.search_customers_by_name(db=db, name=name, sort_by=sort_by, order=order)
+    """Search customers by partial name or father's name (case-insensitive)"""
+    search_text = query if query is not None else (name if name is not None else "")
+    return customer_service.search_customers(
+        db=db,
+        query_text=search_text,
+        search_field=search_field,
+        sort_by=sort_by,
+        order=order
+    )
 
 @router.get("/{customer_id}", response_model=CustomerOut)
 def get_customer_endpoint(customer_id: UUID, db: Session = Depends(get_db)):

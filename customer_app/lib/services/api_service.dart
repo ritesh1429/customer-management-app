@@ -36,11 +36,16 @@ class ApiService {
     }
   }
 
-  // Search customers by name
-  static Future<List<Customer>> searchCustomers(String name, {String sortBy = 'name', String order = 'asc'}) async {
-    final encodedName = Uri.encodeComponent(name.trim());
+  // Search customers by name or father name
+  static Future<List<Customer>> searchCustomers(
+    String query, {
+    String searchField = 'all',
+    String sortBy = 'name',
+    String order = 'asc',
+  }) async {
+    final encodedQuery = Uri.encodeComponent(query.trim());
     final response = await http.get(
-      Uri.parse('$baseUrl/customers/search?name=$encodedName&sort_by=$sortBy&order=$order'),
+      Uri.parse('$baseUrl/customers/search?query=$encodedQuery&search_field=$searchField&sort_by=$sortBy&order=$order'),
       headers: _headers,
     );
 
