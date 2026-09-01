@@ -31,7 +31,7 @@ class UpdateInfo {
 }
 
 class UpdateService {
-  static const String currentAppVersion = '1.0.0';
+  static const String currentAppVersion = '1.0.1';
 
   /// Check server for app updates
   static Future<void> checkForUpdates(
