@@ -4,10 +4,10 @@ router = APIRouter(prefix="/app", tags=["App Version"])
 
 # App Version Metadata Configuration
 APP_VERSION_INFO = {
-    "latest_version": "1.0.0",
-    "latest_version_code": 1,
+    "latest_version": "1.0.1",
+    "latest_version_code": 2,
     "download_url": "https://github.com/ritesh1429/customer-management-app/releases/latest/download/app-release.apk",
-    "release_notes": "Added right-side A-Z alphabetical fast scroll bar and ascending order customer database queries.",
+    "release_notes": "Added Search by Father's Name and A-Z Alphabetical Fast Scroll Bar.",
     "force_update": False,
 }
 
