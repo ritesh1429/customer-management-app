@@ -205,8 +205,26 @@ class UpdateService {
                 onPressed: () async {
                   if (info.downloadUrl.isNotEmpty) {
                     final uri = Uri.parse(info.downloadUrl);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    try {
+                      final launched = await launchUrl(
+                        uri,
+                        mode: LaunchMode.externalApplication,
+                      );
+                      if (!launched) {
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.platformDefault,
+                        );
+                      }
+                    } catch (_) {
+                      try {
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.platformDefault,
+                        );
+                      } catch (e) {
+                        debugPrint('Failed to open download URL: $e');
+                      }
                     }
                   }
                 },
