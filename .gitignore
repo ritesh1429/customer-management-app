@@ -13,8 +13,8 @@ customer_app/.flutter-plugins
 customer_app/.flutter-plugins-dependencies
 customer_app/.pub-cache/
 customer_app/.pub/
-customer_app/build/
-!customer_app/build/web
+customer_app/build/*
+!customer_app/build/web/
 customer_app/ephemeral/
 customer_app/node_modules/
 
