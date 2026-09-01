@@ -64,6 +64,26 @@ def run_tests():
     print(f"Delete Customer: {status_code} -> {deleted_resp}")
     assert status_code == 200
 
+    # 9. Verify Ascending Order Sorting
+    print("\n--- Ascending Order Sorting Test ---")
+    u1 = {"name": "Zack", "father_name": "Father Z", "aadhaar_number": "100000000001"}
+    u2 = {"name": "Alice", "father_name": "Father A", "aadhaar_number": "100000000002"}
+    u3 = {"name": "Bob", "father_name": "Father B", "aadhaar_number": "100000000003"}
+    
+    id1 = make_request(f"{BASE_URL}/customers", "POST", u1)[1]["customer_id"]
+    id2 = make_request(f"{BASE_URL}/customers", "POST", u2)[1]["customer_id"]
+    id3 = make_request(f"{BASE_URL}/customers", "POST", u3)[1]["customer_id"]
+    
+    status_code, sorted_list = make_request(f"{BASE_URL}/customers?sort_by=name&order=asc")
+    names = [c["name"] for c in sorted_list if c["customer_id"] in (id1, id2, id3)]
+    print(f"Ascending Order returned: {names}")
+    assert names == ["Alice", "Bob", "Zack"], f"Expected ['Alice', 'Bob', 'Zack'], got {names}"
+    
+    # Cleanup test records
+    for cid in (id1, id2, id3):
+        make_request(f"{BASE_URL}/customers/{cid}", method="DELETE")
+    print("  --> PASS: Ascending Order Sorting verified successfully!")
+
     print("--- ALL BACKEND API TESTS PASSED PERFECTLY! ---")
 
 if __name__ == "__main__":

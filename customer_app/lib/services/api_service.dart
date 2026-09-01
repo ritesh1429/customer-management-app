@@ -37,16 +37,18 @@ class ApiService {
   }
 
   // Search customers by name
-  static Future<List<Customer>> searchCustomers(String name) async {
+  static Future<List<Customer>> searchCustomers(String name, {String sortBy = 'name', String order = 'asc'}) async {
     final encodedName = Uri.encodeComponent(name.trim());
     final response = await http.get(
-      Uri.parse('$baseUrl/customers/search?name=$encodedName'),
+      Uri.parse('$baseUrl/customers/search?name=$encodedName&sort_by=$sortBy&order=$order'),
       headers: _headers,
     );
 
     if (response.statusCode == 200) {
       final List<dynamic> list = jsonDecode(response.body);
-      return list.map((item) => Customer.fromJson(item)).toList();
+      final customers = list.map((item) => Customer.fromJson(item)).toList();
+      customers.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      return customers;
     } else {
       final responseData = jsonDecode(response.body);
       throw Exception(responseData['detail'] ?? 'Search failed');
@@ -108,15 +110,17 @@ class ApiService {
   }
 
   // Fetch all customers (paginated)
-  static Future<List<Customer>> fetchAllCustomers({int skip = 0, int limit = 100}) async {
+  static Future<List<Customer>> fetchAllCustomers({int skip = 0, int limit = 100, String sortBy = 'name', String order = 'asc'}) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/customers?skip=$skip&limit=$limit'),
+      Uri.parse('$baseUrl/customers?skip=$skip&limit=$limit&sort_by=$sortBy&order=$order'),
       headers: _headers,
     );
 
     if (response.statusCode == 200) {
       final List<dynamic> list = jsonDecode(response.body);
-      return list.map((item) => Customer.fromJson(item)).toList();
+      final customers = list.map((item) => Customer.fromJson(item)).toList();
+      customers.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      return customers;
     } else {
       final responseData = jsonDecode(response.body);
       throw Exception(responseData['detail'] ?? 'Failed to fetch customer list');

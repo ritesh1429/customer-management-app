@@ -33,11 +33,22 @@ def get_customer_by_id(db: Session, customer_id: UUID) -> Customer:
         )
     return customer
 
-def search_customers_by_name(db: Session, name: str) -> list[Customer]:
+def _get_sort_column(sort_by: str = "name", order: str = "asc"):
+    if sort_by == "created_at":
+        col = Customer.created_at
+    elif sort_by == "aadhaar_number":
+        col = Customer.aadhaar_number
+    else:
+        col = Customer.name
+    
+    return col.asc() if order.lower() == "asc" else col.desc()
+
+def search_customers_by_name(db: Session, name: str, sort_by: str = "name", order: str = "asc") -> list[Customer]:
     if not name or not name.strip():
         return []
     cleaned_name = name.strip()
-    return db.query(Customer).filter(Customer.name.ilike(f"%{cleaned_name}%")).all()
+    sort_col = _get_sort_column(sort_by, order)
+    return db.query(Customer).filter(Customer.name.ilike(f"%{cleaned_name}%")).order_by(sort_col).all()
 
 def update_customer(db: Session, customer_id: UUID, customer_in: CustomerUpdate) -> Customer:
     customer = get_customer_by_id(db, customer_id)
@@ -68,5 +79,6 @@ def delete_customer(db: Session, customer_id: UUID) -> dict:
     db.commit()
     return {"message": "Customer deleted successfully", "customer_id": str(customer_id)}
 
-def list_customers(db: Session, skip: int = 0, limit: int = 100) -> list[Customer]:
-    return db.query(Customer).offset(skip).limit(limit).all()
+def list_customers(db: Session, skip: int = 0, limit: int = 100, sort_by: str = "name", order: str = "asc") -> list[Customer]:
+    sort_col = _get_sort_column(sort_by, order)
+    return db.query(Customer).order_by(sort_col).offset(skip).limit(limit).all()
