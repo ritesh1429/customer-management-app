@@ -84,6 +84,15 @@ def run_tests():
         make_request(f"{BASE_URL}/customers/{cid}", method="DELETE")
     print("  --> PASS: Ascending Order Sorting verified successfully!")
 
+    # 10. Verify App Version Check Endpoint
+    print("\n--- App Version Check Endpoint Test ---")
+    status_code, version_data = make_request(f"{BASE_URL}/app/version")
+    print(f"GET /app/version -> {version_data}")
+    assert status_code == 200
+    assert "latest_version" in version_data
+    assert "download_url" in version_data
+    print("  --> PASS: App Version Endpoint verified successfully!")
+
     print("--- ALL BACKEND API TESTS PASSED PERFECTLY! ---")
 
 if __name__ == "__main__":

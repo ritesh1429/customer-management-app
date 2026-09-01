@@ -2,9 +2,24 @@ import 'package:flutter/material.dart';
 import 'add_customer_screen.dart';
 import 'search_customer_screen.dart';
 import 'all_customers_screen.dart';
+import '../services/update_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Check for updates in background on app startup
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService.checkForUpdates(context, showNoUpdateDialog: false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +29,15 @@ class HomeScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.system_update_rounded),
+            tooltip: 'Check for Updates',
+            onPressed: () {
+              UpdateService.checkForUpdates(context, showNoUpdateDialog: true);
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -34,18 +58,38 @@ class HomeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.indigo.withOpacity(0.3),
+                      color: Colors.indigo.withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.contact_phone_rounded, color: Colors.white, size: 36),
-                    SizedBox(height: 12),
-                    Text(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Icon(Icons.contact_phone_rounded, color: Colors.white, size: 36),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'v${UpdateService.currentAppVersion}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
                       'CUSTOMER MANAGEMENT',
                       style: TextStyle(
                         color: Colors.white70,
@@ -54,8 +98,8 @@ class HomeScreen extends StatelessWidget {
                         letterSpacing: 1.2,
                       ),
                     ),
-                    SizedBox(height: 4),
-                    Text(
+                    const SizedBox(height: 4),
+                    const Text(
                       'Manage Customer Records',
                       style: TextStyle(
                         color: Colors.white,
@@ -154,7 +198,7 @@ class HomeScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 28),

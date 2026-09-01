@@ -22,7 +22,7 @@ class CustomerCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.indigo.withOpacity(0.12)),
+        side: BorderSide(color: Colors.indigo.withValues(alpha: 0.12)),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),

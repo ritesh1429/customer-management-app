@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.connection import engine, Base
-from app.routes import customers
+from app.routes import customers, app_version
 
 # Create database tables automatically on startup if they don't exist
 Base.metadata.create_all(bind=engine)
@@ -23,6 +23,7 @@ app.add_middleware(
 
 # Register routes
 app.include_router(customers.router)
+app.include_router(app_version.router)
 
 @app.get("/")
 def root():
